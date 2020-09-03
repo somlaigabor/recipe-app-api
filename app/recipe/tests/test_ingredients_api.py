@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from core.models import Ingredient
 
-from recipe.serializers import IngredientSerielizer
+from recipe.serializers import IngredientSerializer
 
 
 INGREDIENTS_URL = reverse('recipe:ingredient-list')
@@ -41,14 +41,14 @@ class PrivateIngredientsApiTests(TestCase):
 
     def test_retrieve_ingredient_list(self, ):
         """ Leírás: Test retrieving a list of ingredients """
-        Ingredient.objects.create(user=self.user(), name='Kale')
-        Ingredient.objects.create(user=self.user(), name='Salt')
+        Ingredient.objects.create(user=self.user, name='Kale')
+        Ingredient.objects.create(user=self.user, name='Salt')
 
         res = self.client.get(INGREDIENTS_URL)
 
         ingredients = Ingredient.objects.all().order_by('-name')
 
-        serializer = IngredientSerielizer(ingredients, many=True)
+        serializer = IngredientSerializer(ingredients, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -67,5 +67,23 @@ class PrivateIngredientsApiTests(TestCase):
         res = self.client.get(INGREDIENTS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, 1)
-        self.assertEqual(res.data[1]['name'], ingredient.name)
+        self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data[0]['name'], ingredient.name)
+
+    def test_create_ingredient_successful(self, ):
+        """Test creating a new ingredient"""
+        payload = {'name': 'Cabbage'}
+        self.client.post(INGREDIENTS_URL, payload)
+
+        exists = Ingredient.objects.filter(
+            user=self.user,
+            name=payload['name']
+        ).exists()
+        self.assertTrue(exists)
+
+    def test_create_ingredient_invalid(self, ):
+        """Test creating invalid ingredient fails"""
+        payload = {'name': ''}
+        res = self.client.post(INGREDIENTS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
