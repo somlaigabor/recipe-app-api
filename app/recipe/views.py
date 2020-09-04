@@ -53,6 +53,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
-    # def perform_create(self, serializer):
-    #     """ Leírás: Create a new tag """
-    #     serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        """ Leírás: Create a new recipe """
+        serializer.save(user=self.request.user)
