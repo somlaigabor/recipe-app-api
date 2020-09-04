@@ -46,6 +46,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """ Leírás: Return recipes for the current authenticated user only """
         return self.queryset.filter(user=self.request.user)
 
+    def get_serializer_class(self, ):
+        """ Leírás: Return approproate serializer class """
+        if self.action == 'retrieve':
+            return serializers.RecipeDetailSerializer
+
+        return self.serializer_class
+
     # def perform_create(self, serializer):
     #     """ Leírás: Create a new tag """
     #     serializer.save(user=self.request.user)
